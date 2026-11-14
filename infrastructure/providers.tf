@@ -10,7 +10,7 @@ terraform {
     bucket         = "praneesh-devops-tfstate-sydney-2026"
     key            = "prod/terraform.tfstate"
     region         = "ap-southeast-2"
-    dynamodb_table = "terraform-state-lock"
+    use_lockfile = true
     encrypt        = true
   }
 }

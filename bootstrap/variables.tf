@@ -3,9 +3,3 @@ variable "bucket_name" {
     type        = string
     default     = "praneesh-devops-tfstate-sydney-2026"
 }
-
-variable "table_name" {
-    description = "DynamoDB lock table name"
-    type        = string
-    default     = "terraform-state-lock"
-}
