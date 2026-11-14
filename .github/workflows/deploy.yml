@@ -47,19 +47,28 @@ jobs:
       - name: Wait for EC2 SSH to Become Ready
         run: |
           for i in {1..30}; do
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i ~/.ssh/deploy_key ubuntu@${{ steps.tf_outputs.outputs.server_ip }} "echo ready"; then
-              break
+            if ssh -o StrictHostKeyChecking=no \
+              -o BatchMode=yes \
+              -o ConnectTimeout=5 \
+              -i ~/.ssh/deploy_key \
+              ubuntu@${{ steps.tf_outputs.outputs.server_ip }} "echo ready"; then
+              exit 0
             fi
-            echo "Waiting for SSH on ${{ steps.tf_outputs.outputs.server_ip }}..."
+            echo "Waiting for SSH on ${{ steps.tf_outputs.outputs.server_ip }}... (attempt $i/30)"
             sleep 5
           done
+
+          echo "::error::EC2 SSH did not become ready after 30 attempts"
+          exit 1
 
       - name: Run Ansible Playbook
         working-directory: ./ansible
         run: |
           echo "[webservers]" > inventory.ini
           echo "${{ steps.tf_outputs.outputs.server_ip }}" >> inventory.ini
-          ansible-playbook -i inventory.ini site.yml --private-key ~/.ssh/deploy_key
+          ansible-playbook -i inventory.ini site.yml \
+            -u ubuntu \
+            --private-key ~/.ssh/deploy_key
 
       - name: Output Application URL
         run: |
